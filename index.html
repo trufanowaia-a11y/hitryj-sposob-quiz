@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Хитрый способ — интерактивная логопедическая игра</title>
+<style>
+:root{--ink:#263548;--muted:#66768a;--paper:#fffdf8;--blue:#315b7d;--gold:#d5a84f;--line:#e6dfd2;--good:#28734f;--bad:#a7473f;--cream:#f6f0e4}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#edf2f4,#f6efe3);font:17px/1.5 system-ui,"Segoe UI",sans-serif;color:var(--ink);min-height:100vh;padding:18px}
+.app{max-width:900px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:24px;overflow:hidden;box-shadow:0 18px 55px #26394a18}
+header{padding:25px 30px 20px;background:var(--cream);border-bottom:1px solid var(--line)}
+.kicker{font-size:12px;text-transform:uppercase;letter-spacing:.13em;color:var(--blue);font-weight:800}
+h1{font:700 clamp(28px,5vw,40px)/1.15 Georgia,serif;margin:8px 0}.sub{margin:0;color:var(--muted)}
+main{padding:26px 30px 32px}.welcome{text-align:center;padding:18px 0}
+h2{font:700 27px Georgia,serif;margin:4px 0 12px}.lead{max-width:650px;margin:0 auto 22px;color:var(--muted)}
+.blocks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:22px 0}
+.block{border:1px solid var(--line);border-radius:15px;padding:15px;text-align:left;background:white}
+.block b{display:block;color:var(--blue);margin-bottom:4px}.block span{font-size:14px;color:var(--muted)}
+button{font:inherit;cursor:pointer}.primary,.secondary{border:0;border-radius:12px;padding:12px 20px;font-weight:750}.primary{background:var(--blue);color:white}.secondary{background:#eee9df;color:var(--ink)}button:disabled{opacity:.4;cursor:not-allowed}
+.topline{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:14px;margin-bottom:12px}
+.progress{height:7px;background:#ece8df;border-radius:9px;overflow:hidden;margin-bottom:22px}.bar{height:100%;width:0;background:var(--gold);transition:width .2s}
+.question{font-size:22px;font-weight:750;line-height:1.3;margin:10px 0 18px}
+.answers{display:grid;gap:10px}.answer{border:1.5px solid var(--line);background:white;border-radius:13px;padding:13px 15px;text-align:left;color:var(--ink);transition:.15s}
+.answer:hover:not(:disabled){border-color:var(--blue);background:#f3f7f9}.answer:disabled{opacity:1}.answer.selected{border-color:var(--blue);background:#edf4f8}.answer.correct{border-color:var(--good);background:#edf7f0}.answer.wrong{border-color:var(--bad);background:#fbefed}
+.feedback{min-height:28px;margin:14px 0 3px;font-weight:700}.good{color:var(--good)}.bad{color:var(--bad)}
+.actions{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:22px}
+.note{background:#f5f2eb;border-radius:12px;padding:12px 15px;color:var(--muted);font-size:14px;margin:14px 0}
+.sequence{display:grid;gap:9px}.seqitem{display:flex;gap:12px;align-items:center;background:white;border:1px solid var(--line);padding:11px;border-radius:12px}.seqitem select{font:inherit;padding:7px;border:1px solid var(--line);border-radius:8px;flex:0 0 70px}
+.picture-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.picture{border:1px solid var(--line);border-radius:13px;padding:12px;background:white}.picture .emoji{font-size:30px}.picture b{display:block}.picture small{color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.chip{background:#f3eee4;border:1px solid #e6dcc9;border-radius:99px;padding:7px 11px;font-size:14px}
+.result{text-align:center;padding:20px 0}.score{font:700 54px Georgia,serif;color:var(--blue);margin:12px}.hidden{display:none!important}
+.rubric{text-align:left;background:#f5f2eb;padding:15px;border-radius:13px;margin:18px auto;max-width:650px}
+@media(max-width:560px){body{padding:7px}.app{border-radius:16px}header,main{padding:20px}.question{font-size:20px}.actions>*{flex:1}}
+</style></head>
+<body><div class="app">
+<header><div class="kicker">Интерактивная логопедическая игра · 7–9 лет</div><h1>«Хитрый способ»</h1><p class="sub">По рассказу Виктора Драгунского · Пять заданий на понимание и связную речь</p></header>
+<main>
+<section id="home" class="welcome">
+<h2>Привет! Начинаем игру?</h2><p class="lead">Выполни пять заданий. За первые четыре блока баллы начисляются автоматически. В последнем задании перескажи рассказ вслух — его оценивает логопед.</p>
+<div class="blocks">
+<div class="block"><b>1. Проверь понимание</b><span>15 вопросов с вариантами ответов</span></div>
+<div class="block"><b>2. Верно или неверно</b><span>10 утверждений по рассказу</span></div>
+<div class="block"><b>3. Восстанови порядок</b><span>Расставь события по порядку</span></div>
+<div class="block"><b>4. Почему герои так поступили?</b><span>4 вопроса с выбором ответа</span></div>
+<div class="block"><b>5. Перескажи</b><span>Сначала по опорам, затем самостоятельно</span></div>
+</div><button class="primary" id="start">Начать игру</button>
+</section>
+<section id="task" class="hidden">
+<div class="topline"><span id="blockname"></span><span id="points">Баллы: 0</span></div><div class="progress"><div class="bar" id="bar"></div></div>
+<div id="taskbody"></div><div class="feedback" id="feedback" aria-live="polite"></div>
+<div class="actions"><button class="secondary" id="homebtn">К началу</button><button class="primary" id="check">Проверить</button><button class="primary hidden" id="next">Дальше</button></div>
+</section>
+<section id="result" class="result hidden">
+<div class="kicker">Все пять блоков пройдены</div><h2>Игра завершена!</h2><div class="score" id="score"></div><p id="summary"></p>
+<div class="rubric"><b>Оценка пересказа</b><p>Пересказ оценивает логопед: полнота содержания, последовательность событий, называние героев, причинно-следственные связи, связность и самостоятельность речи.</p></div>
+<p class="note">Результат отображается только на этом устройстве и не отправляется в базу данных.</p><button class="primary" id="again">Пройти ещё раз</button>
+</section>
+</main></div>
+<script>
+const blocks=[
+{title:"Блок 1 из 5 · Проверка понимания",type:"quiz",items:[
+["На что, по словам мамы, уходил её отпуск?",["На мытьё посуды","На прогулки","На чтение газет"],0],
+["Сколько раз в день маме приходилось заниматься посудой?",["Один раз","Два раза","Три раза"],2],
+["Что папа сделал после разговора с мамой?",["Сел придумывать устройство","Уселся на диван","Пошёл мыть посуду"],1],
+["Что мама потребовала от папы и Дениски?",["Купить новую посуду","До обеда придумать, как облегчить мытьё посуды","Приготовить обед"],1],
+["Почему Дениска сразу начал думать?",["Боялся, что мама не будет его кормить, и ему было интересно придумать решение","Хотел получить подарок","Не хотел идти гулять"],0],
+["Чем папа занимался вместо того, чтобы придумывать способ?",["Читал книгу и спал","Брился, надел чистую рубашку, читал газеты и слушал радио","Чинил кран"],1],
+["Какую машину сначала хотел придумать Дениска?",["Машину для уборки комнаты","Электрическую машину для мытья и вытирания посуды","Машину для приготовления еды"],1],
+["Какие вещи Дениска немного развинтил для своей задумки?",["Электрополотёр и папину электробритву","Радио и часы","Пылесос и миксер"],0],
+["Почему Дениска отказался от первой задумки?",["Не нашёл нужную батарейку","Бритва могла разрезать полотенце на кусочки, а он не придумал, куда его прикрепить","Мама запретила трогать приборы"],1],
+["Что помогло Дениске придумать другой способ?",["Он вспомнил прочитанное в газете о конвейере","Папа подсказал ему","Он увидел посудомоечную машину"],0],
+["Сколько столовых приборов мама обычно мыла после обеда?",["Один","Два","Три"],2],
+["В чём заключался хитрый способ Дениски?",["Есть всем по очереди, используя один комплект посуды","Есть только суп","Мыть посуду сразу после каждого блюда"],0],
+["Почему мама не согласилась полностью с предложением Дениски?",["Ей не понравилась еда","Она считала такой способ негигиеничным","Она хотела есть одна"],1],
+["Как папа предложил решить проблему?",["Купить посудомоечную машину","Попросить инженеров помочь","Папа и Дениска будут сами мыть посуду"],2],
+["Сколько приборов в итоге удалось вымыть папе и Дениске?",["Все три","Только два — третий Дениска случайно разбил","Только один"],1]
+]},
+{title:"Блок 2 из 5 · Верно или неверно",type:"tf",items:[
+["Мама жаловалась, что весь её отпуск уходит на мытьё посуды.",true],
+["Папа сразу сел и стал придумывать, как помочь маме.",false],
+["Мама дала папе и Дениске время до обеда, чтобы придумать решение.",true],
+["Дениска боялся, что мама перестанет его кормить.",true],
+["Сначала Дениска хотел сделать электрическую машину для мытья и вытирания посуды.",true],
+["Дениска использовал для своей задумки папин электрополотёр и мамину бритву.",false],
+["Идея с конвейером помогла Дениске придумать способ использовать один комплект посуды.",true],
+["Мама сразу сказала, что способ Дениски очень гигиеничный.",false],
+["Папа предложил им с Дениской самим мыть посуду.",true],
+["Дениска случайно разбил один из трёх приборов во время мытья.",true]
+]},
+{title:"Блок 3 из 5 · Последовательность событий",type:"sequence",items:[
+"Мама пожаловалась, что устала постоянно мыть посуду.",
+"Мама дала папе и Дениске время до обеда, чтобы придумать решение.",
+"Дениска стал думать, а папа занимался своими делами.",
+"Дениска попробовал придумать электрическую машину, но у него не получилось.",
+"Дениска вспомнил о конвейере и придумал хитрый способ.",
+"За обедом Дениска объяснил, как всем есть по очереди из одного комплекта посуды.",
+"Мама назвала этот способ негигиеничным, а папа сказал, что лучше есть всем вместе.",
+"Папа предложил самому мыть посуду вместе с Дениской.",
+"Папа и Дениска вымыли посуду, но один прибор Дениска случайно разбил."
+]},
+{title:"Блок 4 из 5 · Почему герои так поступили?",type:"quiz",items:[
+["Почему Дениска так старательно искал решение?",["Он хотел помочь маме и боялся остаться без обеда","Он хотел разобрать все домашние приборы","Он хотел, чтобы папа ушёл из дома"],0],
+["Почему папа сначала не стал придумывать способ?",["Он не услышал маму","Он решил, что мама пошутила, и занялся своими делами","Он уже вымыл всю посуду"],1],
+["Почему мама не приняла способ Дениски без возражений?",["Ей было неудобно есть одной","Она считала, что есть по очереди из одной посуды негигиенично и невесело","Она не любила суп"],1],
+["Почему папин способ оказался самым полезным?",["Он просто предложил маме купить новую посуду","Он разделил работу: папа и Дениска сами вымыли посуду","Он придумал, как вообще не пользоваться тарелками"],1]
+]},
+{title:"Блок 5 из 5 · Пересказ",type:"retell"}
+];
+let bi=0,qi=0,score=0,answered=false;
+const $=id=>document.getElementById(id);
+function showHome(){$("home").classList.remove("hidden");$("task").classList.add("hidden");$("result").classList.add("hidden")}
+function begin(){bi=0;qi=0;score=0;$("home").classList.add("hidden");$("result").classList.add("hidden");$("task").classList.remove("hidden");render()}
+function render(){
+ answered=false;const b=blocks[bi];$("blockname").textContent=b.title;$("points").textContent="Баллы: "+score;$("bar").style.width=(bi/5*100)+"%";$("feedback").textContent="";$("feedback").className="feedback";$("check").classList.remove("hidden");$("next").classList.add("hidden");
+ const body=$("taskbody");body.innerHTML="";
+ if(b.type==="quiz"||b.type==="tf"){
+ const item=b.items[qi];$("blockname").textContent=b.title+" · "+(qi+1)+" из "+b.items.length;
+ const q=document.createElement("div");q.className="question";q.textContent=item[0];body.append(q);
+ const ans=document.createElement("div");ans.className="answers";
+ (b.type==="quiz"?item[1]:["Верно","Неверно"]).forEach((v,i)=>{const btn=document.createElement("button");btn.className="answer";btn.textContent=v;btn.onclick=()=>{if(answered)return;[...ans.children].forEach(x=>x.classList.remove("selected"));btn.classList.add("selected");btn.dataset.pick=i};ans.append(btn)});body.append(ans);
+ } else if(b.type==="sequence"){
+ const intro=document.createElement("p");intro.textContent="Поставь события в правильном порядке: от начала рассказа к его завершению.";body.append(intro);
+ const wrap=document.createElement("div");wrap.className="sequence";
+ const shuffled=b.items.map((v,i)=>({v,correct:i})).sort(()=>Math.random()-.5);
+ shuffled.forEach(o=>{const row=document.createElement("div");row.className="seqitem";const s=document.createElement("select");s.dataset.correct=o.correct;const blank=document.createElement("option");blank.value="";blank.textContent="№";blank.selected=true;s.append(blank);for(let n=1;n<=b.items.length;n++){const op=document.createElement("option");op.value=n;op.textContent=n;s.append(op)}const t=document.createElement("span");t.textContent=o.v;row.append(s,t);wrap.append(row)});body.append(wrap);
+ } else if(b.type==="retell"){
+ const intro=document.createElement("p");intro.textContent="Сначала перескажи рассказ по опорным картинкам и ключевым словам. Затем расскажи самостоятельно, не глядя на подсказки.";body.append(intro);
+ const pics=[["🍽️","Мама устала","Отпуск · посуда · три раза в день"],["⏳","Задача мамы","До обеда · придумать способ · Дениска и папа"],["⚙️","Первая задумка","Электромашина · полотенце · не получилось"],["💡","Идея Дениски","Конвейер · один прибор · по очереди"],["🥣","Обед","Суп · котлеты · компот · негигиенично"],["🧽","Папин способ","Засучил рукава · мыть посуду вместе"],["🍽️","Финал","Два прибора · один разбит · вывод"]];
+ const grid=document.createElement("div");grid.className="picture-grid";pics.forEach(p=>{const d=document.createElement("div");d.className="picture";const em=document.createElement("div");em.className="emoji";em.textContent=p[0];const b=document.createElement("b");b.textContent=p[1];const sm=document.createElement("small");sm.textContent=p[2];d.append(em,b,sm);grid.append(d)});body.append(grid);
+ const chips=document.createElement("div");chips.className="chips";["сначала","затем","потом","пока","поэтому","в итоге"].forEach(x=>{const c=document.createElement("span");c.className="chip";c.textContent=x;chips.append(c)});body.append(chips);
+ const rubric=document.createElement("div");rubric.className="note";rubric.textContent="Критерии для логопеда: сохранены основные события; события расположены последовательно; названы герои; объяснены два способа решения; использованы причинно-следственные связи; речь связная и самостоятельная.";body.append(rubric);
+ $("check").classList.add("hidden");$("next").classList.remove("hidden");$("next").textContent="Завершить игру";
+ }
+}
+function check(){
+ if(answered)return;const b=blocks[bi];let ok=false;
+ if(b.type==="quiz"||b.type==="tf"){
+ const item=b.items[qi],pick=document.querySelector(".answer.selected");if(!pick){$("feedback").textContent="Сначала выбери ответ.";return}
+ const val=Number(pick.dataset.pick);ok=b.type==="quiz"?val===item[2]:(val===0)===item[1];
+ document.querySelectorAll(".answer").forEach((x,i)=>{x.disabled=true;const correct=b.type==="quiz"?i===item[2]:(i===0)===item[1];if(correct)x.classList.add("correct");else if(i===val)x.classList.add("wrong")});
+ if(ok)score++;answered=true;$("feedback").textContent=ok?"Верно!":"Не совсем. Правильный ответ отмечен."; $("feedback").classList.add(ok?"good":"bad");$("points").textContent="Баллы: "+score;
+ $("check").classList.add("hidden");$("next").classList.remove("hidden");$("next").textContent=qi===b.items.length-1?"Следующий блок":"Следующий вопрос";
+ } else if(b.type==="sequence"){
+ const sels=[...document.querySelectorAll(".seqitem select")];if(sels.some(s=>!s.value)){$("feedback").textContent="Расставь все события.";return}
+ ok=sels.every(s=>Number(s.value)===Number(s.dataset.correct)+1);
+ if(ok)score+=3;answered=true;$("feedback").textContent=ok?"Отлично! Все события на своих местах.":"Порядок пока не совсем верный. Обсуди последовательность с логопедом.";
+ $("feedback").classList.add(ok?"good":"bad");$("points").textContent="Баллы: "+score;$("check").classList.add("hidden");$("next").classList.remove("hidden");$("next").textContent="Следующий блок";
+ }
+}
+function next(){
+ const b=blocks[bi];if(b.type==="quiz"||b.type==="tf"){if(!answered)return;qi++;if(qi<b.items.length){render();return}}
+ if(b.type==="sequence"&&!answered)return;
+ bi++;qi=0;if(bi<blocks.length)render();else finish();
+}
+function finish(){$("task").classList.add("hidden");$("result").classList.remove("hidden");$("score").textContent=score+"/38";$("summary").textContent="Баллы начислены за блоки 1, 2 и 4. За полностью верную последовательность событий начисляется 3 балла. Устный пересказ оценивает логопед."}
+$("start").onclick=begin;$("homebtn").onclick=showHome;$("check").onclick=check;$("next").onclick=next;$("again").onclick=begin;showHome();
+</script></body></html>
